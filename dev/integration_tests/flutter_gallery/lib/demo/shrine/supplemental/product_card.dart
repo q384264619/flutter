@@ -10,8 +10,8 @@ import '../model/app_state_model.dart';
 import '../model/product.dart';
 
 class ProductCard extends StatelessWidget {
-  const ProductCard({ Key? key, this.imageAspectRatio = 33 / 49, this.product })
-      : assert(imageAspectRatio > 0), super(key: key);
+  const ProductCard({ super.key, this.imageAspectRatio = 33 / 49, this.product })
+      : assert(imageAspectRatio > 0);
 
   final double imageAspectRatio;
   final Product? product;
@@ -33,6 +33,10 @@ class ProductCard extends StatelessWidget {
       fit: BoxFit.cover,
     );
 
+    // The fontSize to use for computing the heuristic UI scaling factor.
+    const double defaultFontSize = 14.0;
+    final double containerScalingFactor = MediaQuery.textScalerOf(context).scale(defaultFontSize) / defaultFontSize;
+
     return ScopedModelDescendant<AppStateModel>(
       builder: (BuildContext context, Widget? child, AppStateModel model) {
         return GestureDetector(
@@ -52,14 +56,14 @@ class ProductCard extends StatelessWidget {
                 child: imageWidget,
               ),
               SizedBox(
-                height: kTextBoxHeight * MediaQuery.of(context).textScaleFactor,
+                height: kTextBoxHeight * containerScalingFactor,
                 width: 121.0,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: <Widget>[
                     Text(
                       product == null ? '' : product!.name,
-                      style: theme.textTheme.button,
+                      style: theme.textTheme.labelLarge,
                       softWrap: false,
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -67,7 +71,7 @@ class ProductCard extends StatelessWidget {
                     const SizedBox(height: 4.0),
                     Text(
                       product == null ? '' : formatter.format(product!.price),
-                      style: theme.textTheme.caption,
+                      style: theme.textTheme.bodySmall,
                     ),
                   ],
                 ),

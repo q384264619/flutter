@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:html' as html;
-import 'dart:ui';
+import 'dart:js_interop';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:meta/dart2js.dart';
+import 'package:web/web.dart' as web;
 
 /// Expected sequence of method calls.
 const List<String> callChain = <String>['baz', 'bar', 'foo'];
@@ -33,7 +33,7 @@ const List<StackFrame> expectedDebugStackFrames = <StackFrame>[
     packageScheme: 'package',
     package: 'packages',
     packagePath: 'web_integration/stack_trace.dart',
-    line: 120,
+    line: 122,
     column: 3,
     className: '<unknown>',
     method: 'baz',
@@ -44,7 +44,7 @@ const List<StackFrame> expectedDebugStackFrames = <StackFrame>[
     packageScheme: 'package',
     package: 'packages',
     packagePath: 'web_integration/stack_trace.dart',
-    line: 115,
+    line: 117,
     column: 3,
     className: '<unknown>',
     method: 'bar',
@@ -55,7 +55,7 @@ const List<StackFrame> expectedDebugStackFrames = <StackFrame>[
     packageScheme: 'package',
     package: 'packages',
     packagePath: 'web_integration/stack_trace.dart',
-    line: 110,
+    line: 112,
     column: 3,
     className: '<unknown>',
     method: 'foo',
@@ -66,7 +66,7 @@ const List<StackFrame> expectedDebugStackFrames = <StackFrame>[
 /// Tests that we do not crash while parsing Web stack traces.
 ///
 /// This test is run in debug, profile, and release modes.
-void main() {
+void main() async {
   final StringBuffer output = StringBuffer();
   try {
     try {
@@ -97,12 +97,14 @@ void main() {
     output.writeln(unexpectedStackTrace);
     output.writeln('--- TEST FAILED ---');
   }
+  await web.window.fetch(
+    '/test-result'.toJS,
+    web.RequestInit(
+      method: 'POST',
+      body: '$output'.toJS,
+    )
+  ).toDart;
   print(output);
-  html.HttpRequest.request(
-    '/test-result',
-    method: 'POST',
-    sendData: '$output',
-  );
 }
 
 @noInline
@@ -151,10 +153,9 @@ class StackFrameEquality implements Equality<StackFrame> {
            e1.method == e2.method;
   }
 
-  // TODO(dnfield): This ignore shouldn't be necessary, see https://github.com/dart-lang/sdk/issues/46477
   @override
-  int hash(StackFrame e) { // ignore: avoid_renaming_method_parameters
-    return hashValues(e.number, e.packageScheme, e.package, e.packagePath, e.line, e.column, e.className, e.method);
+  int hash(StackFrame e) {
+    return Object.hash(e.number, e.packageScheme, e.package, e.packagePath, e.line, e.column, e.className, e.method);
   }
 
   @override

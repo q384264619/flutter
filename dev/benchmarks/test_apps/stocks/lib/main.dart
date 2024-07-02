@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-library stocks;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show
-  debugPaintSizeEnabled,
   debugPaintBaselinesEnabled,
   debugPaintLayerBordersEnabled,
   debugPaintPointersEnabled,
+  debugPaintSizeEnabled,
   debugRepaintRainbowEnabled;
 
 import 'i18n/stock_strings.dart';
@@ -20,7 +18,7 @@ import 'stock_symbol_viewer.dart';
 import 'stock_types.dart';
 
 class StocksApp extends StatefulWidget {
-  const StocksApp({Key? key}) : super(key: key);
+  const StocksApp({super.key});
 
   @override
   StocksAppState createState() => StocksAppState();
@@ -49,18 +47,14 @@ class StocksAppState extends State<StocksApp> {
   }
 
   ThemeData get theme {
-    switch (_configuration.stockMode) {
-      case StockMode.optimistic:
-        return ThemeData(
-          brightness: Brightness.light,
-          primarySwatch: Colors.purple,
-        );
-      case StockMode.pessimistic:
-        return ThemeData(
-          brightness: Brightness.dark,
-          primarySwatch: Colors.purple,
-        );
-    }
+    return ThemeData(
+      useMaterial3: false,
+      brightness: switch (_configuration.stockMode) {
+        StockMode.optimistic => Brightness.light,
+        StockMode.pessimistic => Brightness.dark,
+      },
+      primarySwatch: Colors.purple,
+    );
   }
 
   Route<dynamic>? _getRoute(RouteSettings settings) {

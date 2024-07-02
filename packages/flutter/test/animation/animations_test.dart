@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'dart:ui' as ui;
-
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:leak_tracker_flutter_testing/leak_tracker_flutter_testing.dart';
 
 import '../scheduler/scheduler_tester.dart';
 
 class BogusCurve extends Curve {
+  const BogusCurve();
+
   @override
   double transform(double t) => 100.0;
 }
@@ -17,9 +18,10 @@ class BogusCurve extends Curve {
 void main() {
   setUp(() {
     WidgetsFlutterBinding.ensureInitialized();
-    WidgetsBinding.instance.resetEpoch();
-    ui.window.onBeginFrame = null;
-    ui.window.onDrawFrame = null;
+    WidgetsBinding.instance
+      ..resetEpoch()
+      ..platformDispatcher.onBeginFrame = null
+      ..platformDispatcher.onDrawFrame = null;
   });
 
   test('toString control test', () {
@@ -124,6 +126,19 @@ void main() {
     expect(animation.value, 0.25);
     expect(animation, hasOneLineDescription);
     expect(animation.toString(), contains('no next'));
+  });
+
+  test('TrainHoppingAnimation dispatches memory events', () async {
+    await expectLater(
+      await memoryEvents(
+        () => TrainHoppingAnimation(
+          const AlwaysStoppedAnimation<double>(1),
+          const AlwaysStoppedAnimation<double>(1),
+        ).dispose(),
+        TrainHoppingAnimation,
+      ),
+      areCreateAndDispose,
+    );
   });
 
   test('AnimationMean control test', () {
@@ -235,7 +250,7 @@ void main() {
     final AnimationController controller = AnimationController(
       vsync: const TestVSync(),
     );
-    final CurvedAnimation curved = CurvedAnimation(parent: controller, curve: BogusCurve());
+    final CurvedAnimation curved = CurvedAnimation(parent: controller, curve: const BogusCurve());
     FlutterError? error;
     try {
       curved.value;
@@ -497,4 +512,19 @@ FlutterError
     expect(animation.value, 10.0);
   });
 
+  test('$CurvedAnimation dispatches memory events', () async {
+    await expectLater(
+      await memoryEvents(
+        () => CurvedAnimation(
+          parent: AnimationController(
+            duration: const Duration(milliseconds: 100),
+            vsync: const TestVSync(),
+          ),
+          curve: Curves.linear,
+        ).dispose(),
+        CurvedAnimation,
+      ),
+      areCreateAndDispose,
+    );
+  });
 }

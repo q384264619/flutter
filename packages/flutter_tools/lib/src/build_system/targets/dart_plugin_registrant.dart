@@ -12,7 +12,7 @@ import '../../flutter_plugins.dart';
 import '../../project.dart';
 import '../build_system.dart';
 
-/// Generates a new `./dart_tool/flutter_build/generated_main.dart`
+/// Generates a new `./dart_tool/flutter_build/dart_plugin_registrant.dart`
 /// based on the current dependency map in `pubspec.lock`.
 class DartPluginRegistrantTarget extends Target {
   /// Construct a [DartPluginRegistrantTarget].
@@ -22,11 +22,7 @@ class DartPluginRegistrantTarget extends Target {
   ///
   /// If `project` is unset, a [FlutterProject] based on environment is used.
   @visibleForTesting
-  factory DartPluginRegistrantTarget.test(FlutterProject project) {
-    return DartPluginRegistrantTarget._(project);
-  }
-
-  DartPluginRegistrantTarget._(this._project);
+  const DartPluginRegistrantTarget.test(FlutterProject project) : _project = project;
 
   final FlutterProject? _project;
 
@@ -86,7 +82,7 @@ class DartPluginRegistrantTarget extends Target {
   @override
   List<Source> get outputs => <Source>[
     const Source.pattern(
-      '{PROJECT_DIR}/.dart_tool/flutter_build/generated_main.dart',
+      '{PROJECT_DIR}/.dart_tool/flutter_build/dart_plugin_registrant.dart',
       optional: true,
     ),
   ];

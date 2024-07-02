@@ -40,14 +40,15 @@ class NavigationIconView {
 
   FadeTransition transition(BottomNavigationBarType type, BuildContext context) {
     Color? iconColor;
-    if (type == BottomNavigationBarType.shifting) {
-      iconColor = _color;
-    } else {
-      final ThemeData theme = Theme.of(context);
-      final ColorScheme colorScheme = theme.colorScheme;
-      iconColor = theme.brightness == Brightness.light
-          ? colorScheme.primary
-          : colorScheme.secondary;
+    switch (type) {
+      case BottomNavigationBarType.shifting:
+        iconColor = _color;
+      case BottomNavigationBarType.fixed:
+        final ThemeData theme = Theme.of(context);
+        iconColor = switch (theme.brightness) {
+          Brightness.light => theme.colorScheme.primary,
+          Brightness.dark  => theme.colorScheme.secondary,
+        };
     }
 
     return FadeTransition(
@@ -75,7 +76,7 @@ class NavigationIconView {
 }
 
 class CustomIcon extends StatelessWidget {
-  const CustomIcon({Key? key}) : super(key: key);
+  const CustomIcon({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +91,7 @@ class CustomIcon extends StatelessWidget {
 }
 
 class CustomInactiveIcon extends StatelessWidget {
-  const CustomInactiveIcon({Key? key}) : super(key: key);
+  const CustomInactiveIcon({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -107,7 +108,7 @@ class CustomInactiveIcon extends StatelessWidget {
 }
 
 class BottomNavigationDemo extends StatefulWidget {
-  const BottomNavigationDemo({Key? key}) : super(key: key);
+  const BottomNavigationDemo({super.key});
 
   static const String routeName = '/material/bottom_navigation';
 
@@ -165,8 +166,9 @@ class _BottomNavigationDemoState extends State<BottomNavigationDemo>
 
   @override
   void dispose() {
-    for (final NavigationIconView view in _navigationViews)
+    for (final NavigationIconView view in _navigationViews) {
       view.controller.dispose();
+    }
     super.dispose();
   }
 

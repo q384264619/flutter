@@ -5,6 +5,7 @@
 import '../../artifacts.dart';
 import '../../base/file_system.dart';
 import '../../build_info.dart';
+import '../../convert.dart';
 import '../../devfs.dart';
 import '../../project.dart';
 import '../build_system.dart';
@@ -51,7 +52,7 @@ class UnpackLinux extends Target {
     if (buildModeEnvironment == null) {
       throw MissingDefineException(kBuildMode, name);
     }
-    final BuildMode buildMode = getBuildModeForName(buildModeEnvironment);
+    final BuildMode buildMode = BuildMode.fromCliName(buildModeEnvironment);
     final String engineSourcePath = environment.artifacts
       .getArtifactPath(
         Artifact.linuxDesktopPath,
@@ -82,11 +83,7 @@ class UnpackLinux extends Target {
         platform: targetPlatform,
       )
     );
-    final DepfileService depfileService = DepfileService(
-      fileSystem: environment.fileSystem,
-      logger: environment.logger,
-    );
-    depfileService.writeToFile(
+    environment.depFileService.writeToFile(
       depfile,
       environment.buildDir.childFile(_kLinuxDepfile),
     );
@@ -123,7 +120,7 @@ abstract class BundleLinuxAssets extends Target {
     if (buildModeEnvironment == null) {
       throw MissingDefineException(kBuildMode, 'bundle_linux_assets');
     }
-    final BuildMode buildMode = getBuildModeForName(buildModeEnvironment);
+    final BuildMode buildMode = BuildMode.fromCliName(buildModeEnvironment);
     final Directory outputDirectory = environment.outputDir
       .childDirectory('flutter_assets');
     if (!outputDirectory.existsSync()) {
@@ -135,23 +132,37 @@ abstract class BundleLinuxAssets extends Target {
       environment.buildDir.childFile('app.dill')
         .copySync(outputDirectory.childFile('kernel_blob.bin').path);
     }
-    final String versionInfo = FlutterProject.current().getVersionInfo();
+    final String versionInfo = getVersionInfo(environment.defines);
     final Depfile depfile = await copyAssets(
       environment,
       outputDirectory,
       targetPlatform: targetPlatform,
+      buildMode: buildMode,
       additionalContent: <String, DevFSContent>{
         'version.json': DevFSStringContent(versionInfo),
-      }
+      },
     );
-    final DepfileService depfileService = DepfileService(
-      fileSystem: environment.fileSystem,
-      logger: environment.logger,
-    );
-    depfileService.writeToFile(
+    environment.depFileService.writeToFile(
       depfile,
       environment.buildDir.childFile('flutter_assets.d'),
     );
+  }
+
+  /// Return json encoded string that contains data about version for package_info
+  String getVersionInfo(Map<String, String> defines) {
+    final Map<String, dynamic> versionInfo =
+        jsonDecode(FlutterProject.current().getVersionInfo())
+            as Map<String, dynamic>;
+
+    if (defines.containsKey(kBuildNumber)) {
+      versionInfo['build_number'] = defines[kBuildNumber];
+    }
+
+    if (defines.containsKey(kBuildName)) {
+      versionInfo['version'] = defines[kBuildName];
+    }
+
+    return jsonEncode(versionInfo);
   }
 }
 
@@ -193,7 +204,7 @@ class LinuxAotBundle extends Target {
 }
 
 class DebugBundleLinuxAssets extends BundleLinuxAssets {
-  const DebugBundleLinuxAssets(TargetPlatform targetPlatform) : super(targetPlatform);
+  const DebugBundleLinuxAssets(super.targetPlatform);
 
   @override
   String get name => 'debug_bundle_${getNameForTargetPlatform(targetPlatform)}_assets';
@@ -210,7 +221,7 @@ class DebugBundleLinuxAssets extends BundleLinuxAssets {
 }
 
 class ProfileBundleLinuxAssets extends BundleLinuxAssets {
-  const ProfileBundleLinuxAssets(TargetPlatform targetPlatform) : super(targetPlatform);
+  const ProfileBundleLinuxAssets(super.targetPlatform);
 
   @override
   String get name => 'profile_bundle_${getNameForTargetPlatform(targetPlatform)}_assets';
@@ -226,7 +237,7 @@ class ProfileBundleLinuxAssets extends BundleLinuxAssets {
 }
 
 class ReleaseBundleLinuxAssets extends BundleLinuxAssets {
-  const ReleaseBundleLinuxAssets(TargetPlatform targetPlatform) : super(targetPlatform);
+  const ReleaseBundleLinuxAssets(super.targetPlatform);
 
   @override
   String get name => 'release_bundle_${getNameForTargetPlatform(targetPlatform)}_assets';

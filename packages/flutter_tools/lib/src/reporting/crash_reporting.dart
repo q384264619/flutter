@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:file/file.dart';
 import 'package:http/http.dart' as http;
+import 'package:unified_analytics/unified_analytics.dart';
 
 import '../base/file_system.dart';
 import '../base/io.dart';
@@ -15,7 +16,6 @@ import '../base/platform.dart';
 import '../doctor.dart';
 import '../project.dart';
 import 'github_template.dart';
-import 'reporting.dart';
 
 /// Tells crash backend that the error is from the Flutter CLI.
 const String _kProductId = 'Flutter_Tools';
@@ -59,26 +59,23 @@ class CrashReporter {
     required FileSystem fileSystem,
     required Logger logger,
     required FlutterProjectFactory flutterProjectFactory,
-    required HttpClient client,
   }) : _fileSystem = fileSystem,
        _logger = logger,
-       _flutterProjectFactory = flutterProjectFactory,
-       _client = client;
+       _flutterProjectFactory = flutterProjectFactory;
 
   final FileSystem _fileSystem;
   final Logger _logger;
   final FlutterProjectFactory _flutterProjectFactory;
-  final HttpClient _client;
 
   /// Prints instructions for filing a bug about the crash.
   Future<void> informUser(CrashDetails details, File crashFile) async {
-    _logger.printError('A crash report has been written to ${crashFile.path}.');
+    _logger.printError('A crash report has been written to ${crashFile.path}');
     _logger.printStatus('This crash may already be reported. Check GitHub for similar crashes.', emphasis: true);
 
     final String similarIssuesURL = GitHubTemplateCreator.toolCrashSimilarIssuesURL(details.error.toString());
     _logger.printStatus('$similarIssuesURL\n', wrap: false);
     _logger.printStatus('To report your crash to the Flutter team, first read the guide to filing a bug.', emphasis: true);
-    _logger.printStatus('https://flutter.dev/docs/resources/bug-reports\n', wrap: false);
+    _logger.printStatus('https://flutter.dev/to/report-bugs\n', wrap: false);
 
     _logger.printStatus('Create a new GitHub issue by pasting this link into your browser and completing the issue template. Thank you!', emphasis: true);
 
@@ -86,7 +83,6 @@ class CrashReporter {
       fileSystem: _fileSystem,
       logger: _logger,
       flutterProjectFactory: _flutterProjectFactory,
-      client: _client,
     );
 
     final String gitHubTemplateURL = await gitHubTemplateCreator.toolCrashIssueTemplateGitHubURL(
@@ -109,21 +105,21 @@ class CrashReporter {
 class CrashReportSender {
   CrashReportSender({
     http.Client? client,
-    required Usage usage,
     required Platform platform,
     required Logger logger,
     required OperatingSystemUtils operatingSystemUtils,
+    required Analytics analytics,
   }) : _client = client ?? http.Client(),
-      _usage = usage,
       _platform = platform,
       _logger = logger,
-      _operatingSystemUtils = operatingSystemUtils;
+      _operatingSystemUtils = operatingSystemUtils,
+      _analytics = analytics;
 
   final http.Client _client;
-  final Usage _usage;
   final Platform _platform;
   final Logger _logger;
   final OperatingSystemUtils _operatingSystemUtils;
+  final Analytics _analytics;
 
   bool _crashReportSent = false;
 
@@ -158,7 +154,7 @@ class CrashReportSender {
       final String flutterVersion = getFlutterVersion();
 
       // We don't need to report exceptions happening on user branches
-      if (_usage.suppressAnalytics || RegExp(r'^\[user-branch\]\/').hasMatch(flutterVersion)) {
+      if (!_analytics.okToSend || RegExp(r'^\[user-branch\]\/').hasMatch(flutterVersion)) {
         return;
       }
 
@@ -172,7 +168,7 @@ class CrashReportSender {
       );
 
       final http.MultipartRequest req = http.MultipartRequest('POST', uri);
-      req.fields['uuid'] = _usage.clientId;
+      req.fields['uuid'] = _analytics.clientId;
       req.fields['product'] = _kProductId;
       req.fields['version'] = flutterVersion;
       req.fields['osName'] = _platform.operatingSystem;

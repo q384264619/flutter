@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/// @docImport 'dart:ui';
+///
+/// @docImport 'package:flutter/widgets.dart';
+/// @docImport 'package:flutter_driver/driver_extension.dart';
+library;
+
 import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show ServicesBinding;
@@ -182,7 +188,7 @@ mixin PaintingBinding on BindingBase, ServicesBinding {
 class _SystemFontsNotifier extends Listenable {
   final Set<VoidCallback> _systemFontsCallbacks = <VoidCallback>{};
 
-  void notifyListeners () {
+  void notifyListeners() {
     for (final VoidCallback callback in _systemFontsCallbacks) {
       callback();
     }
@@ -192,6 +198,7 @@ class _SystemFontsNotifier extends Listenable {
   void addListener(VoidCallback listener) {
     _systemFontsCallbacks.add(listener);
   }
+
   @override
   void removeListener(VoidCallback listener) {
     _systemFontsCallbacks.remove(listener);

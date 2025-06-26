@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/// @docImport 'package:flutter/widgets.dart';
+library;
+
 import 'dart:developer';
 import 'dart:ui' as ui;
 
@@ -87,19 +90,17 @@ abstract class ShaderWarmUp {
     await warmUpOnCanvas(canvas);
     final ui.Picture picture = recorder.endRecording();
     assert(debugCaptureShaderWarmUpPicture(picture));
-    if (!kIsWeb || isSkiaWeb) { // Picture.toImage is not implemented on the html renderer.
-      TimelineTask? debugShaderWarmUpTask;
+    TimelineTask? debugShaderWarmUpTask;
+    if (!kReleaseMode) {
+      debugShaderWarmUpTask = TimelineTask()..start('Warm-up shader');
+    }
+    try {
+      final ui.Image image = await picture.toImage(size.width.ceil(), size.height.ceil());
+      assert(debugCaptureShaderWarmUpImage(image));
+      image.dispose();
+    } finally {
       if (!kReleaseMode) {
-        debugShaderWarmUpTask = TimelineTask()..start('Warm-up shader');
-      }
-      try {
-        final ui.Image image = await picture.toImage(size.width.ceil(), size.height.ceil());
-        assert(debugCaptureShaderWarmUpImage(image));
-        image.dispose();
-      } finally {
-        if (!kReleaseMode) {
-          debugShaderWarmUpTask!.finish();
-        }
+        debugShaderWarmUpTask!.finish();
       }
     }
     picture.dispose();

@@ -41,10 +41,11 @@ void main() {
     final DiagnosticPropertiesBuilder builder = DiagnosticPropertiesBuilder();
     const RadioThemeData().debugFillProperties(builder);
 
-    final List<String> description = builder.properties
-      .where((DiagnosticsNode node) => !node.isFiltered(DiagnosticLevel.info))
-      .map((DiagnosticsNode node) => node.toString())
-      .toList();
+    final List<String> description =
+        builder.properties
+            .where((DiagnosticsNode node) => !node.isFiltered(DiagnosticLevel.info))
+            .map((DiagnosticsNode node) => node.toString())
+            .toList();
 
     expect(description, <String>[]);
   });
@@ -60,17 +61,18 @@ void main() {
       visualDensity: VisualDensity.standard,
     ).debugFillProperties(builder);
 
-    final List<String> description = builder.properties
-      .where((DiagnosticsNode node) => !node.isFiltered(DiagnosticLevel.info))
-      .map((DiagnosticsNode node) => node.toString())
-      .toList();
+    final List<String> description =
+        builder.properties
+            .where((DiagnosticsNode node) => !node.isFiltered(DiagnosticLevel.info))
+            .map((DiagnosticsNode node) => node.toString())
+            .toList();
 
     expect(
       description,
       equalsIgnoringHashCodes(<String>[
         'mouseCursor: WidgetStatePropertyAll(SystemMouseCursor(click))',
-        'fillColor: WidgetStatePropertyAll(Color(0xfffffff0))',
-        'overlayColor: WidgetStatePropertyAll(Color(0xfffffff1))',
+        'fillColor: WidgetStatePropertyAll(${const Color(0xfffffff0)})',
+        'overlayColor: WidgetStatePropertyAll(${const Color(0xfffffff1)})',
         'splashRadius: 1.0',
         'materialTapTargetSize: MaterialTapTargetSize.shrinkWrap',
         'visualDensity: VisualDensity#00000(h: 0.0, v: 0.0)',
@@ -129,26 +131,42 @@ void main() {
     // Radio.
     await tester.pumpWidget(buildRadio());
     await tester.pumpAndSettle();
-    expect(_getRadioMaterial(tester), paints..circle(color: defaultFillColor));
+    expect(
+      _getRadioMaterial(tester),
+      paints
+        ..circle(color: Colors.transparent)
+        ..circle(color: defaultFillColor),
+    );
     // Size from MaterialTapTargetSize.shrinkWrap with added VisualDensity.
     expect(tester.getSize(_findRadio()), const Size(40.0, 40.0) + visualDensity.baseSizeAdjustment);
 
     // Selected radio.
     await tester.pumpWidget(buildRadio(selected: true));
     await tester.pumpAndSettle();
-    expect(_getRadioMaterial(tester), paints..circle(color: selectedFillColor));
+    expect(
+      _getRadioMaterial(tester),
+      paints
+        ..circle(color: Colors.transparent)
+        ..circle(color: selectedFillColor),
+    );
 
     // Radio with hover.
     await tester.pumpWidget(buildRadio());
     await _pointGestureToRadio(tester);
     await tester.pumpAndSettle();
     expect(_getRadioMaterial(tester), paints..circle(color: hoverOverlayColor));
-    expect(RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1), SystemMouseCursors.text);
+    expect(
+      RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1),
+      SystemMouseCursors.text,
+    );
 
     // Radio with focus.
     await tester.pumpWidget(buildRadio(autofocus: true));
     await tester.pumpAndSettle();
-    expect(_getRadioMaterial(tester), paints..circle(color: focusOverlayColor, radius: splashRadius));
+    expect(
+      _getRadioMaterial(tester),
+      paints..circle(color: focusOverlayColor, radius: splashRadius),
+    );
   });
 
   testWidgets('Radio properties are taken over the theme values', (WidgetTester tester) async {
@@ -223,21 +241,34 @@ void main() {
     // Radio.
     await tester.pumpWidget(buildRadio());
     await tester.pumpAndSettle();
-    expect(_getRadioMaterial(tester), paints..circle(color: defaultFillColor));
+    expect(
+      _getRadioMaterial(tester),
+      paints
+        ..circle(color: Colors.transparent)
+        ..circle(color: defaultFillColor),
+    );
     // Size from MaterialTapTargetSize.shrinkWrap with added VisualDensity.
     expect(tester.getSize(_findRadio()), const Size(40.0, 40.0) + visualDensity.baseSizeAdjustment);
 
     // Selected radio.
     await tester.pumpWidget(buildRadio(selected: true));
     await tester.pumpAndSettle();
-    expect(_getRadioMaterial(tester), paints..circle(color: selectedFillColor));
+    expect(
+      _getRadioMaterial(tester),
+      paints
+        ..circle(color: Colors.transparent)
+        ..circle(color: selectedFillColor),
+    );
 
     // Radio with hover.
     await tester.pumpWidget(buildRadio());
     await _pointGestureToRadio(tester);
     await tester.pumpAndSettle();
     expect(_getRadioMaterial(tester), paints..circle(color: hoverColor));
-    expect(RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1), SystemMouseCursors.text);
+    expect(
+      RendererBinding.instance.mouseTracker.debugDeviceActiveCursor(1),
+      SystemMouseCursors.text,
+    );
 
     // Radio with focus.
     await tester.pumpWidget(buildRadio(autofocus: true));
@@ -278,15 +309,27 @@ void main() {
     // Radio.
     await tester.pumpWidget(buildRadio());
     await tester.pumpAndSettle();
-    expect(_getRadioMaterial(tester), paints..circle(color: themeDefaultFillColor));
+    expect(
+      _getRadioMaterial(tester),
+      paints
+        ..circle(color: Colors.transparent)
+        ..circle(color: themeDefaultFillColor),
+    );
 
     // Selected radio.
     await tester.pumpWidget(buildRadio(selected: true));
     await tester.pumpAndSettle();
-    expect(_getRadioMaterial(tester), paints..circle(color: selectedFillColor));
+    expect(
+      _getRadioMaterial(tester),
+      paints
+        ..circle(color: Colors.transparent)
+        ..circle(color: selectedFillColor),
+    );
   });
 
-  testWidgets('Radio theme overlay color resolves in active/pressed states', (WidgetTester tester) async {
+  testWidgets('Radio theme overlay color resolves in active/pressed states', (
+    WidgetTester tester,
+  ) async {
     const Color activePressedOverlayColor = Color(0xFF000001);
     const Color inactivePressedOverlayColor = Color(0xFF000002);
 
@@ -299,6 +342,7 @@ void main() {
       }
       return null;
     }
+
     const double splashRadius = 24.0;
 
     Widget buildRadio({required bool active}) {
@@ -309,13 +353,7 @@ void main() {
             splashRadius: splashRadius,
           ),
         ),
-        home: Scaffold(
-          body: Radio<int>(
-            value: active ? 1 : 0,
-            groupValue: 1,
-            onChanged: (_) { },
-          ),
-        ),
+        home: Scaffold(body: Radio<int>(value: active ? 1 : 0, groupValue: 1, onChanged: (_) {})),
       );
     }
 
@@ -325,11 +363,7 @@ void main() {
 
     expect(
       _getRadioMaterial(tester),
-      paints
-        ..circle(
-          color: inactivePressedOverlayColor,
-          radius: splashRadius,
-        ),
+      paints..circle(color: inactivePressedOverlayColor, radius: splashRadius),
       reason: 'Inactive pressed Radio should have overlay color: $inactivePressedOverlayColor',
     );
 
@@ -339,11 +373,7 @@ void main() {
 
     expect(
       _getRadioMaterial(tester),
-      paints
-        ..circle(
-          color: activePressedOverlayColor,
-          radius: splashRadius,
-        ),
+      paints..circle(color: activePressedOverlayColor, radius: splashRadius),
       reason: 'Active pressed Radio should have overlay color: $activePressedOverlayColor',
     );
   });
@@ -364,11 +394,7 @@ void main() {
             data: const RadioThemeData(
               fillColor: MaterialStatePropertyAll<Color>(localThemeFillColor),
             ),
-            child: Radio<int>(
-              value: active ? 1 : 0,
-              groupValue: 1,
-              onChanged: (_) { },
-            ),
+            child: Radio<int>(value: active ? 1 : 0, groupValue: 1, onChanged: (_) {}),
           ),
         ),
       );
@@ -376,7 +402,12 @@ void main() {
 
     await tester.pumpWidget(buildRadio(active: true));
     await tester.pumpAndSettle();
-    expect(_getRadioMaterial(tester), paints..circle(color: localThemeFillColor));
+    expect(
+      _getRadioMaterial(tester),
+      paints
+        ..circle(color: Colors.transparent)
+        ..circle(color: localThemeFillColor),
+    );
   });
 }
 
